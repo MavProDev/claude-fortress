@@ -2,7 +2,7 @@
 name: fortress
 description: >
   FORTRESS is the most comprehensive adversarial security audit framework available for
-  Claude Code. It deploys 448 attack personas across 24 specialized squads through a
+  Claude Code. It deploys 446 attack personas across 25 specialized squads through a
   rigorous 9-phase protocol — from auto-detecting the project stack (Phase 0: RECON)
   through adversarial assault, validation, standards-mapped reporting, approved execution,
   integration verification, and antifragile debrief. Every finding requires proof-of-exploit
@@ -19,7 +19,7 @@ description: >
 
 # FORTRESS Protocol
 
-FORTRESS is the most comprehensive adversarial security audit framework available for Claude Code. You have invoked FORTRESS to perform a security audit on the current codebase. This protocol will auto-detect the project's stack, assemble the right attack squads from a library of 448 personas across 24 domains, require proof-of-exploit for every finding, validate findings against false positives, map all results to defense-grade security standards (CWE, CVSS 4.0, OWASP, NIST 800-53, STIG, MITRE ATT&CK), and deliver a 10-artifact evidence package. Every phase gate requires your approval — FORTRESS never auto-fixes.
+FORTRESS is the most comprehensive adversarial security audit framework available for Claude Code. You have invoked FORTRESS to perform a security audit on the current codebase. This protocol will auto-detect the project's stack, assemble the right attack squads from a library of 446 personas across 25 domains, require proof-of-exploit for every finding, validate findings against false positives, map all results to defense-grade security standards (CWE, CVSS 4.0, OWASP, NIST 800-53, STIG, MITRE ATT&CK), and deliver a 10-artifact evidence package. Every phase gate requires your approval — FORTRESS never auto-fixes.
 
 ## Invocation Modes
 
@@ -368,6 +368,10 @@ Using the framework and version information from Step 0.1, check for these high-
 | Next.js (Server Actions) | 14.0.0–14.2.24 | CVE-2025-55183 | High | Source code exposure via Server Actions |
 | Node.js | Multiple | CVE-2025-55131 | High | Buffer allocation race leaking in-process secrets |
 | Node.js | Multiple | CVE-2025-55130 | High | Filesystem permission bypass via symlinks |
+| Microsoft MCP server (`@modelcontextprotocol/server-microsoft`) | ≤ 0.6.3 | CVE-2026-26118 | CVSS 8.8 | AI tool-invocation hijacking (Microsoft patched March 10 2026 Patch Tuesday) |
+| Azure DevOps MCP server | All versions at April 3 2026 disclosure | CVE-2026-32211 | CVSS 9.1 | Missing-auth flaw on MCP endpoint — no patch at disclosure |
+| nginx-ui MCP integration | All versions | CVE-2026-33032 ("MCPwn") | CVSS 9.8 | Unauthenticated RCE, **under active exploitation** April 2026; ~2,600 exposed instances on Shodan |
+| LiteLLM (Python) | 1.82.7 and 1.82.8 | N/A (supply chain, PyPI quarantined) | Critical | Malicious .pth files in v1.82.7/1.82.8 stole SSH/cloud/k8s credentials (March 24 2026); any project pinned to these exact versions is compromised — upgrade to ≥ 1.82.9 |
 
 **Check procedure:**
 1. If a detected framework and version falls within a vulnerable range, generate an **IMMEDIATE CRITICAL FINDING** with severity CRITICAL
@@ -3564,7 +3568,7 @@ If `git_available = true` and a stash was created in Step 5.1:
 
 ## Section 11: Persona Taxonomy
 
-This section contains the complete FORTRESS persona library: 448 personas across 23 squads plus the Wildcard squad. During Phase 1 (Squad Assembly), the orchestrator extracts the relevant squad entries from this section to build each squad agent's prompt. Each persona defines a name, 2-3 attack techniques, and success criteria.
+This section contains the complete FORTRESS persona library: 446 personas across 24 numbered squads (1-23, 25) plus the Wildcard squad. During Phase 1 (Squad Assembly), the orchestrator extracts the relevant squad entries from this section to build each squad agent's prompt. Each persona defines a name, 2-3 attack techniques, and success criteria.
 
 ---
 
@@ -3572,7 +3576,7 @@ This section contains the complete FORTRESS persona library: 448 personas across
 
 These squads run on EVERY audit regardless of stack detection.
 
-### Squad 1: Infrastructure & Supply Chain (22 personas)
+### Squad 1: Infrastructure & Supply Chain (23 personas)
 *Activation: Always active*
 
 1. **Dependency auditor** — Scan manifests and lock files for known CVEs, outdated packages, unmaintained libraries. Success: find dependency with active CVE or no updates in 2+ years.
@@ -3597,6 +3601,7 @@ These squads run on EVERY audit regardless of stack detection.
 20. **Artifact provenance verifier** — Verify build artifacts are reproducible, check for attestation gaps. Success: find unattested or unreproducible build artifact.
 21. **Typosquatting hunter** — Check dependencies for names similar to popular packages, detect potential typosquats. Success: find dependency with suspiciously similar name to popular package.
 22. **Git submodule auditor** — Check submodule references for pinned commits, trust boundaries, stale references. Success: find unpinned submodule or reference to untrusted repository.
+23. **AI middleware supply-chain hunter** — Identify AI-specific supply-chain attack patterns targeting middleware libraries developers trust. Covers: malicious `.pth` files that execute arbitrary code at Python import (LiteLLM v1.82.7/1.82.8 March 2026 incident — `.pth` files hijacked SSH keys, cloud creds, Kubernetes secrets during ~3h PyPI window before quarantine); version hijacking of high-download AI libraries (>1M/mo: `litellm`, `openai`, `anthropic`, `langchain`, `instructor`, `@modelcontextprotocol/*`, `@ai-sdk/*`); credential-stealing payloads hidden in AI SDK updates (TeamPCP pattern — publish to PyPI, hide in minor version, harvest, revert within 3h); typosquats and homoglyph attacks on AI package names; compromised post-install hooks in npm AI packages. Cross-references the PyPI advisory feed and npm advisory feed against the project's `requirements.txt`, `pyproject.toml`, `package.json`, and lockfiles. Success: find AI-middleware dependency without pinned integrity hash, or dependency version inside a known-compromised range, or typosquat candidate in lockfile. Canonical references: Wiz TeamPCP report (March 25 2026 — same actor also hit Trivy, Checkmarx KICS, OpenVSX, Telnyx SDK); LiteLLM security post-mortem (docs.litellm.ai/blog/security-update-march-2026).
 
 ### Squad 2: Edge Cases & Input Validation (21 personas)
 *Activation: Always active*
@@ -3623,7 +3628,7 @@ These squads run on EVERY audit regardless of stack detection.
 20. **Environment variable injector** — Test for injectable environment variables that alter application behavior. Success: find env var that can be set by attacker to change app behavior.
 21. **Canonicalization specialist** — Test for path canonicalization bypasses, URL normalization issues, case sensitivity mismatches. Success: find canonicalization difference that bypasses access control.
 
-### Squad 3: Future-Proofing & Quantum Readiness (16 personas)
+### Squad 3: Future-Proofing & Quantum Readiness (17 personas)
 *Activation: Always active*
 
 1. **Deprecation tracker** — Identify deprecated APIs, libraries, language features, and framework patterns in use. Success: find deprecated feature with known removal timeline.
@@ -3642,8 +3647,9 @@ These squads run on EVERY audit regardless of stack detection.
 14. **Algorithm identifier hardcoding detector** — Find hardcoded algorithm OIDs or names that prevent agile migration. Success: find hardcoded algorithm identifier that blocks algorithm rotation.
 15. **IPv6 transition auditor** — Check for IPv4-only assumptions in network code, hardcoded IPv4 addresses, missing dual-stack. Success: find IPv4-only code path that will fail on IPv6 networks.
 16. **AI regulation forecaster** — Identify AI/ML patterns that may conflict with emerging regulations (EU AI Act, etc.). Success: find AI usage pattern likely to require compliance changes within 2 years.
+17. **Model deprecation timeline enforcer** — Scan the codebase for hardcoded AI model identifiers and flag risk of silent breakage when the model retires. Maintains a rolling reference table (cross-ref Section 12.5) of known retirement dates: `claude-3-haiku-20240307` (retires April 19 2026), `claude-haiku-3-5` (retired Feb 19 2026), `claude-opus-4` + `claude-opus-4-1` (pulled from selector April 2026, hard retire June 15 2026), `claude-sonnet-4` (retires June 15 2026), `gpt-4` family (verify against OpenAI deprecation calendar), `gemini-1.5-*` (verify against Google deprecation calendar). Flags: (a) hardcoded model-ID literals in config, env, or code; (b) absence of a deprecation monitor or migration plan; (c) missing fallback or graceful-downgrade path when the hardcoded model returns 404/410; (d) tests pinned to a soon-to-retire model with no alt. Does NOT second-guess model choice — only surfaces timeline risk. Success: find hardcoded model-ID scheduled to retire within 90 days with no migration path in the repo. Output: file:line pairs + suggested migration target + days-until-retirement countdown.
 
-### Squad 4: Logging & Audit Trail (16 personas)
+### Squad 4: Logging & Audit Trail (17 personas)
 *Activation: Always active*
 
 1. **Audit log completeness checker** — Verify all security-relevant actions are logged: auth, access, changes, admin ops. Success: find security-critical operation with no audit log entry.
@@ -3662,6 +3668,7 @@ These squads run on EVERY audit regardless of stack detection.
 14. **Log desynchronization attacker** — Test for time synchronization issues that could defeat log correlation. Success: find log sources using different time references.
 15. **Structured logging escape artist** — Test structured log formats for injection via field values that break parsing. Success: find structured log field that breaks JSON/format parsing when injected.
 16. **Privileged operation completeness checker** — Verify all privileged operations (admin, config change, data export) are logged. Success: find privileged operation with no audit trail.
+17. **EU AI Act Article 12 logging auditor** — Verify that AI operation logs meet the EU AI Act Article 12 automatic-logging and traceability requirements. Enforcement begins August 2 2026; penalties up to €15M or 3% annual turnover. Audits for: (a) automatic capture of every AI system operation with input/output hashes; (b) tamper-evident or append-only log storage; (c) retention period documented and compliant with policy; (d) traceability of automated decisions back to the model version, prompt template, and deployment context that produced them; (e) human-readable audit trail available to conformity-assessment bodies on request; (f) compatibility notes for prEN 18229-1 and ISO/IEC DIS 24970 structured logging formats (both still draft as of April 2026 — flagged as drafts, not enforced). Narrows the scope of persona 11 (Compliance-specific logging auditor) to the EU AI Act specifically. Cross-references Section 12.9 for the Article-to-squad mapping. Success: find an AI operation (model call, tool invocation, agent action, human override) with missing or incomplete Article 12 log fields.
 
 ### Squad 5: Code Quality & Configuration (17 personas)
 *Activation: Always active*
@@ -3686,7 +3693,7 @@ These squads run on EVERY audit regardless of stack detection.
 
 ---
 
-### Conditionally Active (15 squads — 290 personas)
+### Conditionally Active (16 squads — 285 personas)
 
 These squads activate only when their trigger conditions are detected during Phase 0/Phase 1.
 
@@ -3868,7 +3875,7 @@ These squads activate only when their trigger conditions are detected during Pha
 17. **Multi-tenancy data isolation analyst** — Test tenant data isolation at query, schema, and connection levels. Success: find path to access another tenant's data.
 18. **Database feature escalation specialist** — Test for database features (jobs, mail, filesystem access) that enable privilege escalation. Success: find database feature that extends access beyond intended scope.
 
-### Squad 14: AI/LLM Security (22 personas)
+### Squad 14: AI/LLM Security (25 personas)
 *Activation: Trigger: openai, anthropic, langchain, llamaindex, ai-sdk, model imports*
 
 1. **Prompt injector (direct)** — Test for direct prompt injection in user inputs sent to LLM, system prompt override. Success: find user input that overrides system prompt or changes LLM behavior.
@@ -3876,7 +3883,7 @@ These squads activate only when their trigger conditions are detected during Pha
 3. **System prompt extractor** — Test for ability to extract system prompt via crafted user messages. Success: find technique that causes LLM to reveal its system prompt.
 4. **Data exfiltrator via LLM** — Test for LLM-mediated data exfiltration via crafted outputs, tool calls, markdown rendering. Success: find path where LLM can be tricked into exfiltrating data.
 5. **Excessive agency tester** — Test for LLM actions without proper human approval, overly broad tool access. Success: find LLM with ability to perform sensitive actions without approval gate.
-6. **Cost DOS attacker** — Test for ability to trigger expensive LLM calls, large context windows, repeated invocations. Success: find input that causes disproportionate LLM cost.
+6. **Cost DOS attacker** — Test for ability to trigger expensive LLM calls, large context windows, repeated invocations. Success: find input that causes disproportionate LLM cost. Also verifies that reasoning-effort parameters (`reasoning_effort`, `thinking.budget_tokens`, Claude's `xhigh` effort level — standard across Mistral, Gemini, OpenAI, Claude as of April 2026) are not exposed unfiltered to end users; if they are, verify server-side validation caps the maximum effort level per user/tenant.
 7. **Output handler auditor** — Test LLM output handling for injection into SQL, HTML, commands, file paths. Success: find LLM output used in unsafe context without sanitization.
 8. **RAG poisoning specialist** — Test retrieval-augmented generation for document injection, ranking manipulation. Success: find RAG pipeline that can be poisoned via injected documents.
 9. **Embedding inversion tester** — Test embedding endpoints for information leakage, training data recovery from embeddings. Success: find embedding that leaks sensitive information about source data.
@@ -3893,8 +3900,11 @@ These squads activate only when their trigger conditions are detected during Pha
 20. **Multimodal injection specialist** — Test image/audio/video inputs for embedded prompt injection, steganographic instructions. Success: find multimodal input that contains hidden prompt injection.
 21. **AI capability weaponization tester** — Test for AI capabilities that could be weaponized: code generation, social engineering, misinformation. Success: find AI feature that can be leveraged for harmful output generation.
 22. **Vector store access control tester** — Test vector databases and embedding stores for unauthorized queries, cross-tenant embedding leakage, similarity search manipulation via adversarial embeddings, and missing access controls on semantic search. Success: find vector store query that returns embeddings from unauthorized context or tenant.
+23. **Tokenizer drift cost auditor** — Verify that cost-estimation logic accounts for the actual tokenizer version in use, not a stale estimate. Anthropic's Opus 4.7 (April 16 2026) shipped with a new tokenizer producing 1.0×–1.35× more tokens for identical text at identical list price — production costs can silently inflate up to 35% per call with no code change. Audits for: (a) presence of a tokenizer-version assertion or version-check in cost-estimation code paths; (b) usage of provider-official token-counting APIs vs. a heuristic like `len(text)/4`; (c) unit tests that pin expected token counts against specific tokenizer versions (break the test on drift); (d) cost budget alerts that trigger on unexpected per-request token-count drift, not just absolute spend; (e) tokenizer version tracked in logs for each API call (prerequisite for post-hoc cost audit). Complements persona 6 (Cost DOS attacker) — that catches deliberate cost amplification, this catches silent cost drift from provider-side tokenizer changes. Success: find cost-estimation code path that would silently miss a +35% cost increase after a tokenizer update.
+24. **Confidence-scored hypothesis generator auditor** — Test whether any AI-in-the-loop security-adjacent tooling the project exposes (internal pentest automation, vulnerability triage agents, anomaly-detection LLMs) produces **confidence-scored, evidenced** outputs rather than flat vulnerability lists. Pattern borrowed from mature threat-intel platforms (Mjolnir MÍMIR): "HIGH CONFIDENCE (0.92): Stored XSS in `comments.jsx:47` → renders in `dashboard.jsx:182` → ATT&CK T1189" beats "possible XSS." Audits for: (a) every AI-generated finding carries a confidence score or equivalent signal; (b) confidence derives from reproducible evidence, not model self-report; (c) low-confidence findings are gated behind a separate review queue, not blindly trusted; (d) generator and validator roles are architecturally separated (separate evaluators are easier to tune toward skepticism than generators). Success: find an AI-generated security output produced without a confidence signal or without separate validator.
+25. **Validation-vs-exploitation boundary tester** — Test whether any AI-driven pentest or vulnerability-validation code respects the legal boundary between validating exposure and exploiting it. Industry convention (Aikido, Shannon, Fenrir APS): one record proves the vuln; extracting full datasets is exploitation, not validation. Under CFAA (18 U.S.C. § 1030) and equivalent EU statutes, validation that exceeds minimum-necessary data access becomes unauthorized access even with written authorization. Audits for: (a) validation routines cap data access at the minimum required to prove the finding; (b) validation runs behind the engagement-manifest / authorization scope, not the app's normal auth boundary; (c) tiered action classification exists — passive reads, low-impact enumeration, state-changing actions — each with its own approval gate; (d) complete immutable audit log of every validation step and the data it touched; (e) non-bypassable blocklist for destructive commands (`rm -rf`, `DROP TABLE`, mass-delete endpoints). Success: find validation routine that extracts more data than needed to prove the vuln, or a destructive action with no approval gate. Relevant to any codebase embedding an AI red-team agent or autonomous pentester.
 
-### Squad 15: Single-Agent & MCP Exploitation (14 personas)
+### Squad 15: Single-Agent & MCP Exploitation (15 personas)
 *Activation: Trigger: mcp, tool_use, function_calling patterns, .claude/ directory*
 
 1. **MCP server trust auditor** — Test MCP server connections for trust verification, TLS, authentication. Success: find MCP server connection without proper trust verification.
@@ -3909,8 +3919,9 @@ These squads activate only when their trigger conditions are detected during Pha
 10. **Human-in-the-loop bypass specialist** — Test for paths that skip required human approval in agent workflows. Success: find agent action path that bypasses required human confirmation.
 11. **Excessive autonomy auditor** — Test for agent actions that should require approval but execute automatically. Success: find destructive or sensitive agent action with no approval gate.
 12. **Agent context window manipulation specialist** — Test for attacks that fill agent context to push out safety instructions. Success: find input that displaces agent instructions from context window.
-13. **Tool composition loop detector** — Test for unsafe recursive tool invocation, unintended tool chain loops, and tool composition that causes amplification or side effects. Success: find tool chain that recurses or composes in unintended way causing harmful side effects.
+13. **Tool composition loop detector** — Test for unsafe recursive tool invocation, unintended tool chain loops, and tool composition that causes amplification or side effects. Success: find tool chain that recurses or composes in unintended way causing harmful side effects. Also tests Task Budget behavior (Anthropic Opus 4.7 public beta, April 2026) — budget exhaustion mid-loop: does the system degrade gracefully, error cleanly, or hang? Can attackers waste budget on decoy tasks to starve legitimate work? Is the budget enforced server-side or only advisory?
 14. **Deceptive agent explanation tester** — Test for agents presenting misleading confidence, fabricating justifications for actions, or framing harmful actions as beneficial to manipulate human approval. Success: find agent output that frames a risky action with misleading confidence or false justification.
+15. **Long-duration agent session auditor** — Test the specific risks of sustained unsupervised autonomous operation over hours or days, as practiced by "AI employee" deployments (Crosby Legal, Cognition, 11x, Serval, Alma — confirmed operating April 2026; a16z data shows 5 of 17 vertical AI apps now *replace* humans rather than augment). Expands persona 5 (Excessive agency tester) with duration-specific attack vectors: (a) accumulated context drift — does the agent's interpretation of its mandate drift across 4h+ / 24h+ / 1w+ sessions as context fills and compacts?; (b) progressive privilege acquisition — does the agent accumulate tool access, credentials, or file-system scope over time that it would not have been granted in a single session?; (c) lack of periodic re-authorization — are there forced checkpoints where a human re-approves the agent's continued operation, or does authorization carry forward indefinitely?; (d) output-verification degradation — do verification checks on the agent's outputs weaken as operators become fatigued or as outputs become routinized?; (e) end-of-session hand-off — when the long-running session ends, is state captured completely or do side effects leak (orphaned subprocesses, background tasks, scheduled jobs, open file handles)?. Success: find a long-running agent deployment missing any of re-authorization, drift detection, or clean hand-off.
 
 ### Squad 16: Blockchain/Web3 (19 personas)
 *Activation: Trigger: solana, ethereum, ethers, web3, anchor, hardhat patterns*
@@ -4074,7 +4085,7 @@ These squads activate when specific programming languages or patterns are detect
 
 ---
 
-### Squad 23: Multi-Agent, Agentic Infrastructure & NHI Security (14 personas)
+### Squad 23: Multi-Agent, Agentic Infrastructure & NHI Security (19 personas)
 *Activation: Trigger: mcp, tool_use, function_calling patterns, .claude/ directory, A2A protocol patterns, multi-agent orchestration patterns, service account or NHI patterns*
 
 1. **Inter-agent communication auditor** — Test multi-agent message passing for injection, impersonation, routing manipulation. Success: find inter-agent message that can be spoofed or injected.
@@ -4091,6 +4102,25 @@ These squads activate when specific programming languages or patterns are detect
 12. **Zero-click AI agent exploit tester** — Test for exploits requiring no user interaction that target the agent's reasoning process through data it processes, such as poisoned documents, emails, or tool outputs. Success: find agent vulnerable to zero-interaction exploitation via data it processes.
 13. **Delegated identity chain auditor** — Test for credential and identity propagation through agent delegation chains, where downstream agents inherit broader privileges than intended through token forwarding or scope escalation. Success: find delegation chain where downstream agent inherits broader privileges than intended.
 14. **Cascading failure propagation tester** — Test for error amplification across multi-agent orchestration graphs, including blast radius of single agent failure and hallucinating planners issuing destructive tasks to downstream agents. Success: find single agent failure that propagates uncontrolled to multiple downstream systems.
+15. **Multi-model routing manipulation tester** — Target routing middleware such as LiteLLM, Vercel AI Gateway, OpenRouter, or custom routers. 37% of enterprises run ≥5 models in production (a16z, April 2026); pricing spread exceeds 750× (Cohere Command R7B $0.04/M input vs GPT-5.4 Pro $30/M output), making routing a first-class attack surface. Tests: (a) can crafted inputs (request metadata, headers, system-message prefix tokens, tool-call output shape) force routing to a specific attacker-preferred model that bypasses a safer default?; (b) is model-selection logic deterministic and auditable, or are there untested conditional branches?; (c) does the router expose the selected-model name in error responses or logs in a way that lets an attacker probe the routing table?; (d) do load-balancing, cost-routing, or latency-routing features provide attacker-controllable oracles? Success: find crafted input that reliably steers routing to a different model than the default policy.
+16. **Fallback chain degradation auditor** — Map the model fallback chain and test whether induced failure of the preferred model silently degrades to a less-safe / less-aligned / less-accurate fallback without alerting operators. Attack recipe: exhaust or error the primary (rate-limit bomb, token-budget drain, deliberate prompt that triggers provider-side content filter) to force fallback; measure whether safety properties (refusal rate, jailbreak resistance, structured-output validation, PII-redaction behavior) degrade in the fallback. Pattern: LiteLLM and similar routers default to transparent failover — operationally convenient, security hole. Success: find a fallback transition where a safety property observable on the primary does not hold on the fallback, without an alert.
+17. **Cross-provider auth inconsistency tester** — With 5+ models across providers, each provider has a different auth model (API key, OIDC, service account, signed URL, workload identity). Tests: (a) does the routing layer leak keys from one provider into logs or error responses when another provider's request fails?; (b) are all provider keys rotated on the same cadence, or is one stale?; (c) does a compromised worker-node gain access to all provider keys at once, or are they per-request scoped?; (d) can a prompt exfiltrate one provider's key by tricking the router into echoing request headers, environment variables, or retry metadata in a response to another provider?; (e) are error messages consistent across providers, or does provider-specific wording leak the selected provider to an attacker? Success: find a routing failure mode that leaks a provider-specific credential, identity, or selection hint.
+18. **Cost-routing abuse detector** — Pricing spread exceeds 750× across providers as of April 2026. Tests: can an attacker force routing to the most expensive tier on every request (metadata injection, long-context prompts, forced reasoning-effort escalation, deliberate prompt-complexity amplification)? Is cost-per-tenant capped? Does the system accept user-provided routing hints without server-side validation? Are cost alerts wired to per-tenant budgets, not just global spend? Complements Squad 14 persona 6 (Cost DOS attacker) — that catches single-request cost amplification, this catches routing-layer abuse. Success: find an input pattern that reliably forces routing to a higher-cost model than the target's policy would normally select.
+19. **Enterprise shadow agent detector** — Expand persona 3 (Shadow MCP server hunter) beyond MCP to all shadow-agent classes found in enterprise environments as of April 2026: (a) agents deployed by individual employees on personal devices using corporate credentials; (b) agents created *by other agents* (meta-agents, delegated sub-agents) operating outside the primary agent's observability; (c) agents with persistent API tokens that outlive their creating session; (d) agents impersonating service accounts on internal infrastructure; (e) agents running in CI/CD jobs with elevated privileges scoped for a specific pipeline but which persist; (f) browser-extension agents with OAuth-granted scope that exceeds the extension's declared purpose. Inventory methods: outbound HTTP to provider API endpoints (Anthropic, OpenAI, Google, xAI) correlated against sanctioned deployments; unexpected API-key usage patterns in SIEM; directory scans for `~/.claude`, `~/.anthropic`, `~/.openai`, `~/.cursor`, `~/.codex` on employee machines; browser-extension manifest scans against allow-list. Success: find a running agent class not covered by the org's sanctioned-agent inventory.
+
+---
+
+### Squad 25: Computer-Use Security (6 personas)
+*Activation: Triggered when the project's dependency manifest, configuration, or source imports any of: `@anthropic-ai/computer-use*`, `anthropic` SDK with `computer_use` tool type, `pyautogui`, `playwright` used for screen capture rather than DOM testing, OpenAI Agents SDK Sandbox Agents v0.13.6+ with screenshot capability, `xai-sdk` Grok Computer client, Muse Spark SDK, or any MCP server whose manifest declares `capabilities.screenCapture` or `capabilities.clickControl`. Also triggered on explicit `/fortress focused computer-use` or `/fortress focused desktop-agent` scope hint.*
+
+*Context (April 2026):* GPT-5.4 (75% OSWorld, shipped March 5), Claude (computer-use since Oct 2024, Opus 4.6 tops benchmarks), Grok Computer (beta April 13), Muse Spark (Meta, April 8). Every major lab now ships computer-use. Attack surface previously uncovered by earlier Fortress persona set.
+
+1. **Pixel-based prompt injection tester** — Detect adversarial content in screenshots the agent consumes. Covers: adversarial pixels tuned to the vision encoder, steganographic text, visually-hidden overlay instructions (white-on-white, 1px font), UI elements whose rendered text injects prompts (e.g., a fake "notification" that instructs the agent to execute a tool call), QR codes containing hostile payloads, HTML alt-text / ARIA labels that diverge from visible content. Attack class: the agent treats what it sees as trusted — any renderer in the agent's visual context is an untrusted input channel. Success: find an input channel that can render into the agent's screenshot without being sanitized or flagged.
+2. **Clickjacking-via-agent UI specialist** — Test whether malicious UI manipulates agent click or type decisions: overlay elements positioned to intercept the agent's intended click, invisible iframes, z-index tricks, autofocus hijacking, form-field swapping between screenshot capture and click execution (TOCTOU at the pixel layer), double-confirmation flows where the agent confirms action X but by the time the click fires the target has swapped to action Y. Success: find a UI construction where the agent's visible-at-capture target and click-time target can differ.
+3. **Screen-capture exfiltration auditor** — Agents with screen-capture tools capture whatever is on screen, including unrelated windows: password managers, 1Password/Bitwarden tooltips, chat messages from other apps, internal dashboards with PII, terminals with SSH keys visible, email previews. Audits: (a) is screen capture scoped to a single window/region or full screen?; (b) are captures ephemeral or persisted to disk?; (c) do captures leave local storage or transit to provider APIs where they could be logged or used for training?; (d) is there a visible OS-level indicator that capture is active?; (e) are screenshots scrubbed of PII before upload? Success: find screen-capture path that egresses data from windows outside the engagement scope.
+4. **Desktop persistence mechanism hunter** — Computer-use agents can install persistence artifacts: Windows Task Scheduler entries, Linux cron, launchd plists, startup-folder shortcuts, registry Run keys, systemd user units, macOS Login Items, Chrome extensions via managed policy, PowerShell profile modifications, SSH `authorized_keys` additions. Tests: does the agent have filesystem and API access to create these artifacts? If so, is there an audit log of creations? Can they be enumerated and rolled back post-session? Are there approval gates for state-changing persistence operations? Success: find agent capability to create a persistence artifact without approval gate, audit log, or rollback path.
+5. **Clipboard poisoning tester** — Agents routinely copy and paste. Tests: (a) can an attacker overwrite the system clipboard while the agent is mid-task to swap an innocuous value (filename, wallet address, dollar amount) for a malicious one?; (b) does the agent verify clipboard contents match its expectation after paste?; (c) do clipboard history managers (Win+V, Alfred, Maccy, Paste app) create a persistence channel where attacker-controlled payloads stay accessible across sessions?; (d) are clipboard writes audit-logged? Success: find agent workflow where a clipboard value used mid-task is not verified post-paste.
+6. **Keystroke injection via form-field manipulation tester** — Test whether rendered form fields can coerce the agent into typing content it did not intend: autocomplete suggestions that pre-fill attacker-controlled values, JavaScript-driven field substitution during the agent's type sequence, accessibility-label mismatches where the visible label says "Email" but the a11y tree says "Admin Password" and the agent follows one rather than the other, paste-as-type attacks where a "paste" becomes a key-by-key type triggering per-keystroke event handlers an attacker can instrument. Success: find a form-field construction where the agent's typed output diverges from the agent's intended output due to attacker-controllable rendering or a11y state.
 
 ---
 
@@ -4123,12 +4153,12 @@ These squads activate when specific programming languages or patterns are detect
 **Persona Taxonomy Totals (per-squad counts):**
 | Category | Squads | Personas |
 |----------|--------|----------|
-| Always Active | 5 (Squads 1-5) | 22 + 21 + 16 + 16 + 17 = 92 |
-| Conditionally Active | 15 (Squads 6-19, 23) | 16 + 17 + 18 + 19 + 20 + 19 + 19 + 18 + 22 + 14 + 19 + 19 + 18 + 18 + 14 = 290 |
+| Always Active | 5 (Squads 1-5) | 23 + 21 + 17 + 17 + 17 = 95 |
+| Conditionally Active | 16 (Squads 6-19, 23, 25) | 16 + 17 + 18 + 19 + 20 + 19 + 19 + 18 + 25 + 15 + 19 + 19 + 18 + 18 + 19 + 6 = 285 |
 | Language-Triggered | 2 (Squads 20-21) | 16 + 16 = 32 |
 | Context-Triggered | 1 (Squad 22) | 16 |
 | Wildcard | 1 (Red Team) | 18 |
-| **Total** | **24 squads** | **448 personas** |
+| **Total** | **25 squads** | **446 personas** |
 
 > **Note for orchestrator:** During Phase 1, extract only the squads selected by detection heuristics. Each squad agent receives its own persona list as part of the context packet. The full taxonomy is never loaded into a single agent's context.
 
@@ -4398,6 +4428,20 @@ Map AI/ML-specific findings to MITRE ATLAS (Adversarial Threat Landscape for AI 
 | AML.T0098 | AI Agent Tool Credential Harvesting | Stealing credentials via agent tool interfaces |
 | AML.T0099 | AI Agent Tool Data Poisoning | Poisoning data sources where agents invoke tools |
 | AML.T0101 | Data Destruction via AI Agent Tool Invocation | Using agent tools to destroy data |
+
+### 12.9: EU AI Act Article Reference
+
+Map compliance-relevant findings to the EU AI Act Articles that govern them. Enforcement begins August 2 2026; penalties up to €15M or 3% global annual turnover.
+
+| Article | Topic | Enforcement | Penalty Tier | Fortress Coverage |
+|---------|-------|-------------|--------------|-------------------|
+| Art. 9 | Risk management system for high-risk AI | Aug 2 2026 | €15M / 3% turnover | Squad 3 persona 16, Squad 19 (Privacy & Compliance) |
+| Art. 10 | Data governance & training-data quality | Aug 2 2026 | €15M / 3% turnover | Squad 13 (Database & Data), Squad 19 |
+| Art. 12 | Automatic logging & traceability | Aug 2 2026 | €15M / 3% turnover | **Squad 4 persona 17 (primary)**, Squad 4 persona 11 (general compliance logging) |
+| Art. 14 | Human oversight of high-risk AI | Aug 2 2026 | €15M / 3% turnover | Squad 15 (Excessive autonomy auditor), Squad 25 (Computer-Use Security) |
+| Art. 15 | Accuracy, robustness & cybersecurity | Aug 2 2026 | €15M / 3% turnover | Squads 2, 14, 15, 18, 23, 25 collectively |
+
+**Draft standards** (referenced but not yet enforceable as of April 2026): **prEN 18229-1** (structured AI operation logging format), **ISO/IEC DIS 24970** (AI system traceability schema). Treat as drafts; flag gaps as advisory findings until either standard is published.
 
 ---
 
