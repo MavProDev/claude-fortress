@@ -1,6 +1,6 @@
 # Fortress
 
-448 attack personas. 24 squads. 9 phases. Every finding requires proof-of-exploit. Mapped to CWE, CVSS 4.0, OWASP, NIST, and MITRE ATT&CK. If it has a vulnerability, Fortress finds it.
+446 attack personas. 25 squads. 9 phases. Every finding requires proof-of-exploit. Mapped to CWE, CVSS 4.0, OWASP, NIST, and MITRE ATT&CK. If it has a vulnerability, Fortress finds it.
 
 A Claude Code skill that runs the most comprehensive adversarial security audit framework available for any codebase.
 
@@ -36,7 +36,7 @@ In Claude Code:
 ## The 9 Phases
 
 1. **RECON** — Auto-detects project stack, frameworks, languages, and attack surface
-2. **SQUAD ASSEMBLY** — Selects from 448 attack personas across 24 domains
+2. **SQUAD ASSEMBLY** — Selects from 446 attack personas across 25 domains
 3. **ADVERSARIAL ASSAULT** — Squads probe the codebase, every finding requires proof-of-exploit
 4. **VALIDATION** — Filters false positives. If it can't be reproduced, it doesn't ship
 5. **REPORT** — Maps findings to CWE, CVSS 4.0, OWASP (Web + LLM + Agentic), NIST 800-53, DISA STIG, MITRE ATT&CK/ATLAS
