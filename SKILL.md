@@ -1749,11 +1749,12 @@ Finding: {finding_id}
   STIG:         CAT X
   ATT&CK:       TXXXX (Technique Name)
   ATLAS:        AML.TXXXX (Technique Name) | skipped (non-AI finding)
+  AIVSS:        X.X (estimated, +X.X uplift) — AARS:X.X ThM:X.XX MitF:X.XX — factors: AAL:X/TAAB:X/PSM:X/MANE:X/ACS:X/DEP:X/LMC:X/OE:X/IR:X/RC:X | skipped (non-agentic finding)
 ```
 
 Log:
 
-> **Standards enrichment complete: {N} findings enriched with CWE, CVSS 4.0, OWASP, NIST 800-53, NIST SSDF, STIG, and MITRE ATT&CK mappings. {M} findings additionally mapped to MITRE ATLAS.**
+> **Standards enrichment complete: {N} findings enriched with CWE, CVSS 4.0, OWASP, NIST 800-53, NIST SSDF, STIG, and MITRE ATT&CK mappings. {M} findings additionally mapped to MITRE ATLAS. {K} agentic findings additionally scored with estimated AIVSS.**
 
 ### Step 4.3: Confidence Scoring
 
