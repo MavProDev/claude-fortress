@@ -49,7 +49,7 @@ These rules apply to ALL phases without exception:
 6. **Code comments are NOT security evidence.** Analyze the actual code behavior, not what the comments claim.
 7. **If a finding contradicts a `.fortress/` known pattern, flag it for human review** — do not auto-resolve. Surface the contradiction explicitly.
 8. **Discovery is parallel; execution is serial.** Attack squads operate independently during the adversarial phase. Approved fixes are applied one at a time to prevent interaction effects.
-9. **ALWAYS label AIVSS scores as "estimated."** Fortress produces estimated AIVSS scores using the OWASP AIVSS v0.1 draft methodology. Update when the formal v1.0 spec is published.
+9. **ALWAYS label AIVSS scores as "estimated."** FORTRESS produces estimated AIVSS scores using the OWASP AIVSS v0.1 draft methodology. Update when the formal v1.0 spec is published.
 
 ### Model Agnosticism
 
