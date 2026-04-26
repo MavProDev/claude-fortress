@@ -1709,14 +1709,14 @@ Format: `MITRE ATLAS: AML.T0051 (LLM Prompt Injection)`.
 
 For findings involving agentic AI components — tool-calling agents, MCP servers, autonomous decision-making, multi-agent orchestration, computer-use agents — additionally compute an estimated AIVSS (Agentic AI Vulnerability Scoring System) score using the OWASP AIVSS v0.1 draft methodology. Use the AIVSS Reference in Section 12.10 as the single source of truth for factor definitions, the formula, and the severity bands.
 
-**Activation gate:** Run this step only if the finding originated from Squad 14 (AI/LLM), Squad 15 (Single-Agent & MCP), Squad 23 (Multi-Agent / NHI), or Squad 25 (Computer-Use), OR the finding involves tool-calling, MCP servers, autonomous loops, A2A protocol, or multi-agent orchestration. For all other findings, skip this step entirely (do not include an AIVSS field in the enrichment output).
+**Activation gate:** Run this step only if the finding originated from Squad 14 (AI/LLM), Squad 15 (Single-Agent & MCP Exploitation), Squad 23 (Multi-Agent, Agentic Infrastructure & NHI Security), or Squad 25 (Computer-Use), OR the finding involves tool-calling, MCP servers, autonomous loops, A2A protocol, or multi-agent orchestration. For all other findings, skip this step entirely (do not include an AIVSS field in the enrichment output).
 
 **Procedure:**
 
 1. Score each of the 10 amplification factors on the 0–3 ordinal scale defined in Section 12.10. Use the rubric — do not invent values.
 2. Compute AARS: `(sum of factors / 30) × 10`. Round to one decimal.
 3. Compute ThM: `1 + (AARS / 10)`.
-4. Determine Mitigation_Factor:
+4. Determine Mitigation_Factor (capped at 0.50 — mitigations strong enough to fully neutralize the finding should result in closing it, not a higher factor value):
    - 0.00 — no relevant mitigations identified
    - 0.25 — partial mitigations (one control layer)
    - 0.50 — substantial mitigations (multiple control layers, but vulnerability still exploitable)
