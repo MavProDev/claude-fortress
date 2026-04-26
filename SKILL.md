@@ -1705,6 +1705,34 @@ For non-AI findings, skip this step entirely (do not include an ATLAS field in t
 
 Format: `MITRE ATLAS: AML.T0051 (LLM Prompt Injection)`.
 
+#### Step 4.2i: AIVSS Estimation (Agentic Findings Only)
+
+For findings involving agentic AI components — tool-calling agents, MCP servers, autonomous decision-making, multi-agent orchestration, computer-use agents — additionally compute an estimated AIVSS (Agentic AI Vulnerability Scoring System) score using the OWASP AIVSS v0.1 draft methodology. Use the AIVSS Reference in Section 12.10 as the single source of truth for factor definitions, the formula, and the severity bands.
+
+**Activation gate:** Run this step only if the finding originated from Squad 14 (AI/LLM), Squad 15 (Single-Agent & MCP), Squad 23 (Multi-Agent / NHI), or Squad 25 (Computer-Use), OR the finding involves tool-calling, MCP servers, autonomous loops, A2A protocol, or multi-agent orchestration. For all other findings, skip this step entirely (do not include an AIVSS field in the enrichment output).
+
+**Procedure:**
+
+1. Score each of the 10 amplification factors on the 0–3 ordinal scale defined in Section 12.10. Use the rubric — do not invent values.
+2. Compute AARS: `(sum of factors / 30) × 10`. Round to one decimal.
+3. Compute ThM: `1 + (AARS / 10)`.
+4. Determine Mitigation_Factor:
+   - 0.00 — no relevant mitigations identified
+   - 0.25 — partial mitigations (one control layer)
+   - 0.50 — substantial mitigations (multiple control layers, but vulnerability still exploitable)
+5. Compute AIVSS: `round(min(10.0, CVSS_base × ThM × (1 - Mitigation_Factor)), 1)`.
+6. Compute uplift: `AIVSS - CVSS_base`. If positive, format as `[+X.X uplift]`.
+7. Label the score as "estimated" — required by Core Rule 9.
+
+**ALWAYS label the score as "estimated."** Format:
+```
+AIVSS: 9.4 (estimated, +2.1 uplift) — AARS:7.7 ThM:1.77 MitF:0.00 — factors: AAL:3/TAAB:3/PSM:2/MANE:2/ACS:2/DEP:2/LMC:3/OE:2/IR:2/RC:2
+```
+
+If the finding has CVSS 4.0 = 0.0 (e.g., a positive finding or enhancement), skip AIVSS — there is no baseline to amplify.
+
+For non-agentic findings, do not include an AIVSS field in the enrichment output.
+
 #### Step 4.2 Output Format
 
 After enrichment, each validated finding should carry the following standards block:
