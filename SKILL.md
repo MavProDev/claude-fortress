@@ -4475,6 +4475,77 @@ Map compliance-relevant findings to the EU AI Act Articles that govern them. Enf
 
 ---
 
+### 12.10: AIVSS Reference (Agentic AI Vulnerability Scoring System)
+
+> **Source:** OWASP AIVSS v0.1 draft (April 2026). The draft leaves portions of the formula unspecified; FORTRESS adopts the concrete estimation methodology below and labels every output as **estimated**. Update this section when OWASP publishes v1.0.
+
+AIVSS amplifies a finding's CVSS 4.0 base score by quantifying how agentic characteristics escalate baseline severity. Use this section during Phase 4 Step 4.2i for findings involving agentic AI components.
+
+**The 10 Amplification Factors (each scored 0–3, ordinal):**
+
+| # | ID | Factor | 0 (None) | 1 (Low) | 2 (Medium) | 3 (High) |
+|---|----|--------|----------|---------|------------|----------|
+| 1 | AAL  | Agent Autonomy Level         | Human-approved every action | Single-tool, gated invocation | Multi-step plans with occasional human approval | Fully autonomous, self-directed loops |
+| 2 | TAAB | Tool/API Access Breadth      | No tools | 1–2 read-only tools | Multiple tools including write | Broad write/admin access, dynamic MCP server registration |
+| 3 | PSM  | Persistence & State Mgmt     | Stateless | Session-only memory | Cross-session memory | Long-term, shared, or persistent state stores |
+| 4 | MANE | Multi-Agent Network Effects  | Single agent | Two agents | Small network (3–5 agents) | Large network or A2A protocol participation |
+| 5 | ACS  | Access to Critical Systems   | None | Dev/staging only | Production data only | Production infrastructure, payments, IoT, CI/CD, SCADA |
+| 6 | DEP  | Data Exposure Potential      | No sensitive data | Limited PII | Bulk PII or business data | Regulated data (PHI, financial, government secrets) |
+| 7 | LMC  | Lateral Movement Capability  | Sandboxed | Same-service only | Cross-service within tenant | Cross-tenant or external pivot capability |
+| 8 | OE   | Obfuscation & Evasion        | Fully logged with correlation IDs | Standard logs | Sparse audit trail | Untraceable or log-tamperable |
+| 9 | IR   | Impact Reversibility         | Trivially reversible | Reversible with effort | Partially reversible | Irreversible (physical effects, finalized financial txns) |
+| 10 | RC  | Recovery Complexity          | Minutes | Hours | Days | Weeks or unknown |
+
+**Estimation Formula:**
+
+```
+AARS  = (sum of 10 factors / 30) × 10            # Agentic AI Risk Score, 0.0–10.0
+ThM   = 1 + (AARS / 10)                           # Threat Multiplier, 1.0–2.0
+AIVSS = round(min(10.0, CVSS_base × ThM × (1 - Mitigation_Factor)), 1)
+```
+
+**Mitigation_Factor values:**
+- `0.00` — no relevant mitigations identified
+- `0.25` — partial mitigations (one control layer)
+- `0.50` — substantial mitigations (multiple control layers, vulnerability still exploitable)
+
+Mitigation_Factor is capped at 0.50. Mitigations strong enough to neutralize the finding entirely should result in closing the finding, not in a Mitigation_Factor of 1.0.
+
+If `CVSS_base = 0.0` (positive finding, enhancement), skip AIVSS — there is no baseline to amplify.
+
+**Severity Bands:**
+
+| AIVSS Score | Severity | Uplift Annotation |
+|-------------|----------|-------------------|
+| 9.0 – 10.0  | Critical | `[+X.X uplift]` from CVSS_base |
+| 7.0 – 8.9   | High     | same |
+| 4.0 – 6.9   | Medium   | same |
+| 0.1 – 3.9   | Low      | same |
+
+**Worked Example:**
+
+Finding: MCP server registered without trust verification, enabling tool-call hijacking on a production-connected agent.
+- CVSS 4.0 base: **8.1** (estimated)
+- Factors: AAL:3 / TAAB:3 / PSM:2 / MANE:2 / ACS:2 / DEP:2 / LMC:3 / OE:2 / IR:2 / RC:2 — sum = 23
+- AARS = (23 / 30) × 10 = **7.7**
+- ThM = 1 + 7.7/10 = **1.77**
+- Mitigation_Factor = **0.00** (no controls deployed)
+- AIVSS = round(min(10.0, 8.1 × 1.77 × 1.00), 1) = round(14.337, 1) → capped at **10.0**
+- Severity: **Critical**, uplift = **+1.9** from CVSS 8.1
+
+Output line:
+```
+AIVSS:        10.0 (estimated, +1.9 uplift) — AARS:7.7 ThM:1.77 MitF:0.00 — factors: AAL:3/TAAB:3/PSM:2/MANE:2/ACS:2/DEP:2/LMC:3/OE:2/IR:2/RC:2
+```
+
+**Mapping AIVSS to FORTRESS squads:** AIVSS scoring is gated to findings from Squad 14 (AI/LLM), Squad 15 (Single-Agent & MCP Exploitation), Squad 23 (Multi-Agent, Agentic Infrastructure & NHI Security), Squad 25 (Computer-Use), or any finding involving tool-calling agents, MCP servers, autonomous decision-making, A2A protocol, or multi-agent orchestration.
+
+**Honesty caveats** (preserved verbatim from the OWASP draft):
+- Factor scales are **ordinal** (None / Low / Medium / High), not interval. The numeric encoding is for computation only — do not over-interpret precision.
+- AIVSS is a **draft v0.1** framework; treat scores as best-available estimates. Re-validate when v1.0 publishes.
+
+---
+
 ## Section 14: Detection Heuristics
 
 > **Note for orchestrator:** Evaluate these heuristics during Phase 1 (Step 1.1) to determine which conditional squads to activate. A squad activates if ANY trigger in its set matches. Use Glob and Grep tools to check patterns. Squads 1-5, 22, and Red Team are always active and do not need heuristic checks.
