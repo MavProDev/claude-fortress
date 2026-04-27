@@ -1,6 +1,6 @@
 # Fortress
 
-446 attack personas. 25 squads. 9 phases. Every finding requires proof-of-exploit. Mapped to CWE, CVSS 4.0, OWASP, NIST, and MITRE ATT&CK. If it has a vulnerability, Fortress finds it.
+446 attack personas. 25 squads. 9 phases. Every finding requires proof-of-exploit. Mapped to CWE, CVSS 4.0, AIVSS, OWASP, NIST, and MITRE ATT&CK/ATLAS. If it has a vulnerability, Fortress finds it.
 
 A Claude Code skill that runs the most comprehensive adversarial security audit framework available for any codebase.
 
@@ -39,7 +39,7 @@ In Claude Code:
 2. **SQUAD ASSEMBLY** — Selects from 446 attack personas across 25 domains
 3. **ADVERSARIAL ASSAULT** — Squads probe the codebase, every finding requires proof-of-exploit
 4. **VALIDATION** — Filters false positives. If it can't be reproduced, it doesn't ship
-5. **REPORT** — Maps findings to CWE, CVSS 4.0, OWASP (Web + LLM + Agentic), NIST 800-53, DISA STIG, MITRE ATT&CK/ATLAS
+5. **REPORT** — Maps findings to CWE, CVSS 4.0, AIVSS, OWASP (Web + LLM + Agentic), NIST 800-53, DISA STIG, MITRE ATT&CK/ATLAS
 6. **PROPOSE & APPROVE** — Presents fixes for your approval. Never auto-fixes
 7. **EXECUTE** — Applies approved fixes only
 8. **INTEGRATION VERIFY** — Re-runs affected tests, confirms fixes hold
@@ -50,6 +50,7 @@ In Claude Code:
 Every finding maps to:
 - CWE classification
 - CVSS 4.0 score (estimated)
+- AIVSS score (estimated, OWASP v0.1 draft methodology — applied to agentic findings only: tool-calling agents, MCP servers, autonomous loops, multi-agent orchestration)
 - OWASP Web 2025 / LLM 2025 / Agentic 2026
 - NIST 800-53 controls
 - NIST SSDF practices
