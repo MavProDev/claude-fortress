@@ -4473,8 +4473,6 @@ Map compliance-relevant findings to the EU AI Act Articles that govern them. Enf
 
 **Draft standards** (referenced but not yet enforceable as of April 2026): **prEN 18229-1** (structured AI operation logging format), **ISO/IEC DIS 24970** (AI system traceability schema). Treat as drafts; flag gaps as advisory findings until either standard is published.
 
----
-
 ### 12.10: AIVSS Reference (Agentic AI Vulnerability Scoring System)
 
 > **Source:** OWASP AIVSS v0.1 draft (April 2026). The draft leaves portions of the formula unspecified; FORTRESS adopts the concrete estimation methodology below and labels every output as **estimated**. Update this section when OWASP publishes v1.0.
@@ -4540,7 +4538,7 @@ AIVSS:        10.0 (estimated, +1.9 uplift) — AARS:7.7 ThM:1.77 MitF:0.00 — 
 
 **Mapping AIVSS to FORTRESS squads:** AIVSS scoring is gated to findings from Squad 14 (AI/LLM), Squad 15 (Single-Agent & MCP Exploitation), Squad 23 (Multi-Agent, Agentic Infrastructure & NHI Security), Squad 25 (Computer-Use), or any finding involving tool-calling agents, MCP servers, autonomous decision-making, A2A protocol, or multi-agent orchestration.
 
-**Honesty caveats** (preserved verbatim from the OWASP draft):
+**Honesty caveats** (paraphrased from the OWASP draft):
 - Factor scales are **ordinal** (None / Low / Medium / High), not interval. The numeric encoding is for computation only — do not over-interpret precision.
 - AIVSS is a **draft v0.1** framework; treat scores as best-available estimates. Re-validate when v1.0 publishes.
 
