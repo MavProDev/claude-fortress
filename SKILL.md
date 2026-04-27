@@ -7,9 +7,10 @@ description: >
   through adversarial assault, validation, standards-mapped reporting, approved execution,
   integration verification, and antifragile debrief. Every finding requires proof-of-exploit
   (exact file, line, reproducible vector). Every finding is mapped to defense-grade standards:
-  CWE classification, estimated CVSS 4.0 score, OWASP Web/LLM/Agentic categories, NIST
-  800-53 controls, NIST SSDF practices, DISA STIG severity (CAT I/II/III), and MITRE
-  ATT&CK / MITRE ATLAS techniques. Audit results are packaged into a 10-artifact evidence
+  CWE classification, estimated CVSS 4.0 score, estimated AIVSS score (agentic findings),
+  OWASP Web/LLM/Agentic categories, NIST 800-53 controls, NIST SSDF practices, DISA STIG
+  severity (CAT I/II/III), and MITRE ATT&CK / MITRE ATLAS techniques. Audit results are
+  packaged into a 10-artifact evidence
   suite (executive summary, detailed markdown report, SARIF v2.1.0 file, CycloneDX SBOM,
   compliance posture summary, POA&M template, public security page, delta report, and
   security posture snapshot). Propose-and-approve checkpoints at every phase gate — FORTRESS
@@ -19,7 +20,7 @@ description: >
 
 # FORTRESS Protocol
 
-FORTRESS is the most comprehensive adversarial security audit framework available for Claude Code. You have invoked FORTRESS to perform a security audit on the current codebase. This protocol will auto-detect the project's stack, assemble the right attack squads from a library of 446 personas across 25 domains, require proof-of-exploit for every finding, validate findings against false positives, map all results to defense-grade security standards (CWE, CVSS 4.0, OWASP, NIST 800-53, STIG, MITRE ATT&CK), and deliver a 10-artifact evidence package. Every phase gate requires your approval — FORTRESS never auto-fixes.
+FORTRESS is the most comprehensive adversarial security audit framework available for Claude Code. You have invoked FORTRESS to perform a security audit on the current codebase. This protocol will auto-detect the project's stack, assemble the right attack squads from a library of 446 personas across 25 domains, require proof-of-exploit for every finding, validate findings against false positives, map all results to defense-grade security standards (CWE, CVSS 4.0, AIVSS, OWASP, NIST 800-53, STIG, MITRE ATT&CK, MITRE ATLAS), and deliver a 10-artifact evidence package. Every phase gate requires your approval — FORTRESS never auto-fixes.
 
 ## Invocation Modes
 
