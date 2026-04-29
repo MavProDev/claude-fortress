@@ -13,7 +13,7 @@ npx claudesuite install fortress
 Or manually:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/MavProDev/claude-fortress/main/SKILL.md \
+curl -sL https://raw.githubusercontent.com/MavProDev/claude-fortress/master/SKILL.md \
   --create-dirs -o ~/.claude/skills/fortress/SKILL.md
 ```
 
