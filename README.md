@@ -25,6 +25,8 @@ In Claude Code:
 /fortress
 /fortress quick
 /fortress focused auth
+/fortress verify
+/fortress diff
 ```
 
 | Mode | What It Does |
@@ -32,6 +34,8 @@ In Claude Code:
 | `/fortress` | Full 9-phase audit with all artifacts |
 | `/fortress quick` | Phases 0-4 only — no fixes, fast assessment |
 | `/fortress focused <domain>` | Full audit but only squads relevant to the domain (e.g. `auth`, `payments`, `ai`) |
+| `/fortress verify` | Re-audit only files modified since the last audit — validates prior fixes hold and catches regressions |
+| `/fortress diff` | Delta report only — compares current state vs the last audit's posture snapshot. No new audit run |
 
 ## The 9 Phases
 
