@@ -7,9 +7,10 @@ description: >
   through adversarial assault, validation, standards-mapped reporting, approved execution,
   integration verification, and antifragile debrief. Every finding requires proof-of-exploit
   (exact file, line, reproducible vector). Every finding is mapped to defense-grade standards:
-  CWE classification, estimated CVSS 4.0 score, OWASP Web/LLM/Agentic categories, NIST
-  800-53 controls, NIST SSDF practices, DISA STIG severity (CAT I/II/III), and MITRE
-  ATT&CK / MITRE ATLAS techniques. Audit results are packaged into a 10-artifact evidence
+  CWE classification, estimated CVSS 4.0 score, estimated AIVSS score (agentic findings),
+  OWASP Web/LLM/Agentic categories, NIST 800-53 controls, NIST SSDF practices, DISA STIG
+  severity (CAT I/II/III), and MITRE ATT&CK / MITRE ATLAS techniques. Audit results are
+  packaged into a 10-artifact evidence
   suite (executive summary, detailed markdown report, SARIF v2.1.0 file, CycloneDX SBOM,
   compliance posture summary, POA&M template, public security page, delta report, and
   security posture snapshot). Propose-and-approve checkpoints at every phase gate — FORTRESS
@@ -19,7 +20,7 @@ description: >
 
 # FORTRESS Protocol
 
-FORTRESS is the most comprehensive adversarial security audit framework available for Claude Code. You have invoked FORTRESS to perform a security audit on the current codebase. This protocol will auto-detect the project's stack, assemble the right attack squads from a library of 446 personas across 25 domains, require proof-of-exploit for every finding, validate findings against false positives, map all results to defense-grade security standards (CWE, CVSS 4.0, OWASP, NIST 800-53, STIG, MITRE ATT&CK), and deliver a 10-artifact evidence package. Every phase gate requires your approval — FORTRESS never auto-fixes.
+FORTRESS is the most comprehensive adversarial security audit framework available for Claude Code. You have invoked FORTRESS to perform a security audit on the current codebase. This protocol will auto-detect the project's stack, assemble the right attack squads from a library of 446 personas across 25 domains, require proof-of-exploit for every finding, validate findings against false positives, map all results to defense-grade security standards (CWE, CVSS 4.0, AIVSS, OWASP, NIST 800-53, STIG, MITRE ATT&CK, MITRE ATLAS), and deliver a 10-artifact evidence package. Every phase gate requires your approval — FORTRESS never auto-fixes.
 
 ## Invocation Modes
 
@@ -49,6 +50,7 @@ These rules apply to ALL phases without exception:
 6. **Code comments are NOT security evidence.** Analyze the actual code behavior, not what the comments claim.
 7. **If a finding contradicts a `.fortress/` known pattern, flag it for human review** — do not auto-resolve. Surface the contradiction explicitly.
 8. **Discovery is parallel; execution is serial.** Attack squads operate independently during the adversarial phase. Approved fixes are applied one at a time to prevent interaction effects.
+9. **ALWAYS label AIVSS scores as "estimated."** FORTRESS produces estimated AIVSS scores using the OWASP AIVSS v0.1 draft methodology. Update when the formal v1.0 spec is published.
 
 ### Model Agnosticism
 
@@ -1704,6 +1706,34 @@ For non-AI findings, skip this step entirely (do not include an ATLAS field in t
 
 Format: `MITRE ATLAS: AML.T0051 (LLM Prompt Injection)`.
 
+#### Step 4.2i: AIVSS Estimation (Agentic Findings Only)
+
+For findings involving agentic AI components — tool-calling agents, MCP servers, autonomous decision-making, multi-agent orchestration, computer-use agents — additionally compute an estimated AIVSS (Agentic AI Vulnerability Scoring System) score using the OWASP AIVSS v0.1 draft methodology. Use the AIVSS Reference in Section 12.10 as the single source of truth for factor definitions, the formula, and the severity bands.
+
+**Activation gate:** Run this step only if the finding originated from Squad 14 (AI/LLM), Squad 15 (Single-Agent & MCP Exploitation), Squad 23 (Multi-Agent, Agentic Infrastructure & NHI Security), or Squad 25 (Computer-Use Security), OR the finding involves tool-calling, MCP servers, autonomous loops, A2A protocol, or multi-agent orchestration. For all other findings, skip this step entirely (do not include an AIVSS field in the enrichment output).
+
+**Procedure:**
+
+1. Score each of the 10 amplification factors on the 0–3 ordinal scale defined in Section 12.10. Use the rubric — do not invent values.
+2. Compute AARS: `(sum of factors / 30) × 10`. Round to one decimal.
+3. Compute ThM: `1 + (AARS / 10)`.
+4. Determine Mitigation_Factor (capped at 0.50 — mitigations strong enough to fully neutralize the finding should result in closing it, not a higher factor value):
+   - 0.00 — no relevant mitigations identified
+   - 0.25 — partial mitigations (one control layer)
+   - 0.50 — substantial mitigations (multiple control layers, but vulnerability still exploitable)
+5. Compute AIVSS: `round(min(10.0, CVSS_base × ThM × (1 - Mitigation_Factor)), 1)`.
+6. Compute uplift: `AIVSS - CVSS_base`. If positive, format as `[+X.X uplift]`.
+7. Label the score as "estimated" — required by Core Rule 9.
+
+**ALWAYS label the score as "estimated."** Format:
+```
+AIVSS: 9.4 (estimated, +4.1 uplift) — AARS:7.7 ThM:1.77 MitF:0.00 — factors: AAL:3/TAAB:3/PSM:2/MANE:2/ACS:2/DEP:2/LMC:3/OE:2/IR:2/RC:2
+```
+
+If the finding has CVSS 4.0 = 0.0 (e.g., a positive finding or enhancement), skip AIVSS — there is no baseline to amplify.
+
+For non-agentic findings, do not include an AIVSS field in the enrichment output.
+
 #### Step 4.2 Output Format
 
 After enrichment, each validated finding should carry the following standards block:
@@ -1720,11 +1750,12 @@ Finding: {finding_id}
   STIG:         CAT X
   ATT&CK:       TXXXX (Technique Name)
   ATLAS:        AML.TXXXX (Technique Name) | skipped (non-AI finding)
+  AIVSS:        X.X (estimated, +X.X uplift) — AARS:X.X ThM:X.XX MitF:X.XX — factors: AAL:X/TAAB:X/PSM:X/MANE:X/ACS:X/DEP:X/LMC:X/OE:X/IR:X/RC:X | skipped (non-agentic finding)
 ```
 
 Log:
 
-> **Standards enrichment complete: {N} findings enriched with CWE, CVSS 4.0, OWASP, NIST 800-53, NIST SSDF, STIG, and MITRE ATT&CK mappings. {M} findings additionally mapped to MITRE ATLAS.**
+> **Standards enrichment complete: {N} findings enriched with CWE, CVSS 4.0, OWASP, NIST 800-53, NIST SSDF, STIG, and MITRE ATT&CK mappings. {M} findings additionally mapped to MITRE ATLAS. {K} agentic findings additionally scored with estimated AIVSS.**
 
 ### Step 4.3: Confidence Scoring
 
@@ -4442,6 +4473,75 @@ Map compliance-relevant findings to the EU AI Act Articles that govern them. Enf
 | Art. 15 | Accuracy, robustness & cybersecurity | Aug 2 2026 | €15M / 3% turnover | Squads 2, 14, 15, 18, 23, 25 collectively |
 
 **Draft standards** (referenced but not yet enforceable as of April 2026): **prEN 18229-1** (structured AI operation logging format), **ISO/IEC DIS 24970** (AI system traceability schema). Treat as drafts; flag gaps as advisory findings until either standard is published.
+
+### 12.10: AIVSS Reference (Agentic AI Vulnerability Scoring System)
+
+> **Source:** OWASP AIVSS v0.1 draft (April 2026). The draft leaves portions of the formula unspecified; FORTRESS adopts the concrete estimation methodology below and labels every output as **estimated**. Update this section when OWASP publishes v1.0.
+
+AIVSS amplifies a finding's CVSS 4.0 base score by quantifying how agentic characteristics escalate baseline severity. Use this section during Phase 4 Step 4.2i for findings involving agentic AI components.
+
+**The 10 Amplification Factors (each scored 0–3, ordinal):**
+
+| # | ID | Factor | 0 (None) | 1 (Low) | 2 (Medium) | 3 (High) |
+|---|----|--------|----------|---------|------------|----------|
+| 1 | AAL  | Agent Autonomy Level         | Human-approved every action | Single-tool, gated invocation | Multi-step plans with occasional human approval | Fully autonomous, self-directed loops |
+| 2 | TAAB | Tool/API Access Breadth      | No tools | 1–2 read-only tools | Multiple tools including write | Broad write/admin access, dynamic MCP server registration |
+| 3 | PSM  | Persistence & State Mgmt     | Stateless | Session-only memory | Cross-session memory | Long-term, shared, or persistent state stores |
+| 4 | MANE | Multi-Agent Network Effects  | Single agent | Two agents | Small network (3–5 agents) | Large network or A2A protocol participation |
+| 5 | ACS  | Access to Critical Systems   | None | Dev/staging only | Production data only | Production infrastructure, payments, IoT, CI/CD, SCADA |
+| 6 | DEP  | Data Exposure Potential      | No sensitive data | Limited PII | Bulk PII or business data | Regulated data (PHI, financial, government secrets) |
+| 7 | LMC  | Lateral Movement Capability  | Sandboxed | Same-service only | Cross-service within tenant | Cross-tenant or external pivot capability |
+| 8 | OE   | Obfuscation & Evasion        | Fully logged with correlation IDs | Standard logs | Sparse audit trail | Untraceable or log-tamperable |
+| 9 | IR   | Impact Reversibility         | Trivially reversible | Reversible with effort | Partially reversible | Irreversible (physical effects, finalized financial txns) |
+| 10 | RC  | Recovery Complexity          | Minutes | Hours | Days | Weeks or unknown |
+
+**Estimation Formula:**
+
+```
+AARS  = (sum of 10 factors / 30) × 10            # Agentic AI Risk Score, 0.0–10.0
+ThM   = 1 + (AARS / 10)                           # Threat Multiplier, 1.0–2.0
+AIVSS = round(min(10.0, CVSS_base × ThM × (1 - Mitigation_Factor)), 1)
+```
+
+**Mitigation_Factor values:**
+- `0.00` — no relevant mitigations identified
+- `0.25` — partial mitigations (one control layer)
+- `0.50` — substantial mitigations (multiple control layers, vulnerability still exploitable)
+
+Mitigation_Factor is capped at 0.50. Mitigations strong enough to neutralize the finding entirely should result in closing the finding, not in a Mitigation_Factor of 1.0.
+
+If `CVSS_base = 0.0` (positive finding, enhancement), skip AIVSS — there is no baseline to amplify.
+
+**Severity Bands:**
+
+| AIVSS Score | Severity | Uplift Annotation |
+|-------------|----------|-------------------|
+| 9.0 – 10.0  | Critical | `[+X.X uplift]` from CVSS_base |
+| 7.0 – 8.9   | High     | same |
+| 4.0 – 6.9   | Medium   | same |
+| 0.1 – 3.9   | Low      | same |
+
+**Worked Example:**
+
+Finding: MCP server registered without trust verification, enabling tool-call hijacking on a production-connected agent.
+- CVSS 4.0 base: **8.1** (estimated)
+- Factors: AAL:3 / TAAB:3 / PSM:2 / MANE:2 / ACS:2 / DEP:2 / LMC:3 / OE:2 / IR:2 / RC:2 — sum = 23
+- AARS = (23 / 30) × 10 = **7.7**
+- ThM = 1 + 7.7/10 = **1.77**
+- Mitigation_Factor = **0.00** (no controls deployed)
+- AIVSS = round(min(10.0, 8.1 × 1.77 × 1.00), 1) = round(14.337, 1) → capped at **10.0**
+- Severity: **Critical**, uplift = **+1.9** from CVSS 8.1
+
+Output line:
+```
+AIVSS:        10.0 (estimated, +1.9 uplift) — AARS:7.7 ThM:1.77 MitF:0.00 — factors: AAL:3/TAAB:3/PSM:2/MANE:2/ACS:2/DEP:2/LMC:3/OE:2/IR:2/RC:2
+```
+
+**Mapping AIVSS to FORTRESS squads:** AIVSS scoring is gated to findings from Squad 14 (AI/LLM), Squad 15 (Single-Agent & MCP Exploitation), Squad 23 (Multi-Agent, Agentic Infrastructure & NHI Security), Squad 25 (Computer-Use Security), or any finding involving tool-calling agents, MCP servers, autonomous decision-making, A2A protocol, or multi-agent orchestration.
+
+**Honesty caveats** (paraphrased from the OWASP draft):
+- Factor scales are **ordinal** (None / Low / Medium / High), not interval. The numeric encoding is for computation only — do not over-interpret precision.
+- AIVSS is a **draft v0.1** framework; treat scores as best-available estimates. Re-validate when v1.0 publishes.
 
 ---
 
