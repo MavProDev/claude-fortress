@@ -1702,7 +1702,7 @@ For findings from Squads 14–15 (AI/ML Model Security and LLM & Prompt Injectio
 
 If the finding involves AI components but does not map to an ATLAS technique, mark as "N/A — no direct ATLAS mapping."
 
-For non-AI findings, skip this step entirely (do not include an ATLAS field in the enrichment output).
+For non-AI findings, emit `ATLAS: skipped (non-AI finding)` per the Step 4.2 Output Format — do not compute a technique mapping. The line must always be present so downstream consumers see a stable schema.
 
 Format: `MITRE ATLAS: AML.T0051 (LLM Prompt Injection)`.
 
@@ -1710,7 +1710,7 @@ Format: `MITRE ATLAS: AML.T0051 (LLM Prompt Injection)`.
 
 For findings involving agentic AI components — tool-calling agents, MCP servers, autonomous decision-making, multi-agent orchestration, computer-use agents — additionally compute an estimated AIVSS (Agentic AI Vulnerability Scoring System) score using the OWASP AIVSS v0.1 draft methodology. Use the AIVSS Reference in Section 12.10 as the single source of truth for factor definitions, the formula, and the severity bands.
 
-**Activation gate:** Run this step only if the finding originated from Squad 14 (AI/LLM), Squad 15 (Single-Agent & MCP Exploitation), Squad 23 (Multi-Agent, Agentic Infrastructure & NHI Security), or Squad 25 (Computer-Use Security), OR the finding involves tool-calling, MCP servers, autonomous loops, A2A protocol, or multi-agent orchestration. For all other findings, skip this step entirely (do not include an AIVSS field in the enrichment output).
+**Activation gate:** Run this step only if the finding originated from Squad 14 (AI/LLM), Squad 15 (Single-Agent & MCP Exploitation), Squad 23 (Multi-Agent, Agentic Infrastructure & NHI Security), or Squad 25 (Computer-Use Security), OR the finding involves tool-calling, MCP servers, autonomous loops, A2A protocol, or multi-agent orchestration. For all other findings, emit `AIVSS: skipped (non-agentic finding)` per the Step 4.2 Output Format — do not compute the score. The line must always be present so downstream consumers see a stable schema.
 
 **Procedure:**
 
@@ -1732,7 +1732,7 @@ AIVSS: 9.4 (estimated, +4.1 uplift) — AARS:7.7 ThM:1.77 MitF:0.00 — factors:
 
 If the finding has CVSS 4.0 = 0.0 (e.g., a positive finding or enhancement), skip AIVSS — there is no baseline to amplify.
 
-For non-agentic findings, do not include an AIVSS field in the enrichment output.
+For non-agentic findings, emit `AIVSS: skipped (non-agentic finding)` per the Step 4.2 Output Format — never omit the line entirely.
 
 #### Step 4.2 Output Format
 
